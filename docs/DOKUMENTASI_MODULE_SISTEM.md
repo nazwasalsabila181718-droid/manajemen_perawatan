@@ -1,29 +1,31 @@
 # DOKUMENTASI ARSITEKTUR & MODULE SISTEM
 ## Sistem Manajemen Perawatan Armada (Fleet Maintenance System)
 
-Dokumen ini berisi rincian teknis untuk **11 Module Utama** yang membangun **Sistem Manajemen Perawatan Armada**. Dokumen ini dirancang terstruktur dan diurutkan secara konsisten menggunakan penomoran `1, 2, 3, dst.` pada setiap rincian modul.
+Dokumen ini berisi rincian teknis untuk **Module Utama** yang membangun **Sistem Manajemen Perawatan Armada**. Dokumen ini dirancang terstruktur dan diurutkan secara konsisten menggunakan penomoran `1, 2, 3, dst.` pada setiap rincian modul.
 
 ---
 
 ## ⚡ TABEL HAFALAN CEPAT (CHEAT SHEET MODULE)
 
-| No | Nama Module | Fungsi Utama | Role Pengakses Utama | Controller |
+| No | Nama Module | Fungsi Utama | Role Pengakses Utama | Controller / Middleware |
 | :-: | :--- | :--- | :--- | :--- |
 | **GROUP 1: OTENTIKASI & UTAMA** |
 | 1 | **Auth & Profile** | Login, Logout, Registrasi, Update Profil | Semua User | `AuthController`, `ProfileController` |
 | 2 | **Dashboard Utama** | Summary KPI, Grafis Kelayakan, Shortcut | Admin, Teknisi, Driver | `DashboardController` |
+| 3 | **Manajemen Pengguna (RBAC)** | Hak Akses Otorisasi Multi-Role (Admin, Teknisi, Driver, Manager) | Administrator | `RoleMiddleware`, `User` |
 | **GROUP 2: OPERASIONAL & FLEET** |
-| 3 | **Manajemen Armada** | Master Data Kendaraan, KM, Dokumen (STNK/KIR) | Admin & Teknisi | `KendaraanController` |
-| 4 | **Pre-Trip Inspection** | Checklist Harian (Cairan, Ban, Kelistrikan, Kebersihan) | Driver & Teknisi | `ChecklistKendaraanController` |
-| 5 | **Status Armada** | Real-time Kesiapan Armada (Ready/Servis/Rusak) | Semua User | `StatusArmadaController` |
+| 4 | **Manajemen Armada** | Master Data Kendaraan, KM, Dokumen (STNK/KIR) | Admin & Teknisi | `KendaraanController` |
+| 5 | **Pre-Trip Inspection** | Checklist Harian (Cairan, Ban, Kelistrikan, Kebersihan) | Driver & Teknisi | `ChecklistKendaraanController` |
+| 6 | **Status Armada** | Real-time Kesiapan Armada (Ready/Servis/Rusak) | Semua User | `StatusArmadaController` |
 | **GROUP 3: PEMELIHARAAN & KELUHAN** |
-| 6 | **Jadwal & Riwayat Servis** | Servis Berkala (KM/Bulan) & Log Riwayat Servis | Admin & Teknisi | `JadwalPerawatanController` |
-| 7 | **Laporan Keluhan** | Pelaporan Kerusakan Fisik oleh Driver & Perbaikan | Driver & Teknisi | `KeluhanKendaraanController` |
-| **GROUP 4: KEUANGAN, INVENTARIS & ANALITIK** |
-| 8 | **Klaim Biaya Operasional** | Pengajuan & Approval Biaya (BBM, Tol, Service) | Driver, Teknisi, Admin | `PembayaranController` |
-| 9 | **Manajemen Aset/Barang** | Stok Spare Part, Alat Bengkel, Kondisi Barang | Admin & Teknisi | `BarangController` |
-| 10 | **Laporan & Analitik** | Grafis & Laporan Bulanan (Mobil Terboros/Termahal) | Admin | `LaporanController` |
-| 11 | **Notifikasi Peringatan** | Peringatan Jatuh Tempo Servis, STNK, Pajak, KIR | Semua User | `NotificationController` |
+| 7 | **Jadwal & Riwayat Servis** | Servis Berkala (KM/Bulan) & Log Riwayat Servis | Admin & Teknisi | `JadwalPerawatanController` |
+| 8 | **Laporan Keluhan** | Pelaporan Kerusakan Fisik oleh Driver & Perbaikan | Driver & Teknisi | `KeluhanKendaraanController` |
+| **GROUP 4: KEUANGAN, INVENTARIS, KOMUNIKASI & ANALITIK** |
+| 9 | **Klaim Biaya Operasional** | Pengajuan & Approval Biaya (BBM, Tol, Service) | Driver, Teknisi, Admin | `PembayaranController` |
+| 10 | **Manajemen Aset/Barang** | Stok Spare Part, Alat Bengkel, Kondisi Barang | Admin & Teknisi | `BarangController` |
+| 11 | **Komunikasi Chat** | Pesan Instan Driver - Manager | Driver & Manager | `ChatController` |
+| 12 | **Laporan & Analitik** | Grafis & Laporan Bulanan (Mobil Terboros/Termahal) | Admin | `LaporanController` |
+| 13 | **Notifikasi Peringatan** | Peringatan Jatuh Tempo Servis, STNK, Pajak, KIR | Semua User | `NotificationController` |
 
 ---
 
@@ -68,7 +70,27 @@ flowchart TD
 
 ---
 
-### 3. Module Manajemen Armada (Kendaraan / Fleet Management)
+### 3. Module Manajemen Pengguna (RBAC - Role-Based Access Control)
+1. **Tujuan Module**: Mengatur hak akses otorisasi bertingkat untuk role `administrator`, `teknisi`, `driver`, `manager`, dan `user`.
+2. **Alur Bisnis**: Request Masuk ➔ RoleMiddleware Memeriksa Role User Login ➔ Cocokkan dengan Parameter Middleware ➔ Izinkan Akses atau Tolak (403 Forbidden).
+```mermaid
+flowchart TD
+    A[Request Pengguna ke Endpoint Terproteksi] --> B[Middleware Auth Memeriksa Status Sesi]
+    B -- Unauthenticated --> C[Redirect ke Halaman Login]
+    B -- Authenticated --> D[RoleMiddleware Memeriksa Parameter Role Route]
+    D --> E{Apakah Role User Diizinkan?}
+    E -- Tidak --> F[Tampilkan Error 403 Forbidden]
+    E -- Ya --> G[Izinkan Request Masuk ke Controller]
+```
+3. **Route yang Digunakan**: Seluruh Route yang dilindungi `middleware('role:...')`
+4. **Controller / Middleware yang Menangani**: `App\Http\Middleware\RoleMiddleware`, `App\Http\Controllers\AuthController`
+5. **Model & Tabel Database**: `App\Models\User` (Tabel `users`)
+6. **Request Validation**: `role` (required|in:admin,teknisi,user).
+7. **Response**: `Next Request`, `Abort 403 Forbidden`, `RedirectResponse`.
+
+---
+
+### 4. Module Manajemen Armada (Kendaraan / Fleet Management)
 1. **Tujuan Module**: Mengelola data fisik kendaraan, posisi pool, odometer (KM), foto armada, dan dokumen legalitas (STNK, Pajak, KIR).
 2. **Alur Bisnis**: Admin Input Kendaraan ➔ Teknisi/Admin Update KM ➔ Sistem Evaluasi Indikator Warna (🟢 Safe, 🟡 Warning, 🔴 Overdue).
 ```mermaid
@@ -90,7 +112,7 @@ flowchart TD
 
 ---
 
-### 4. Module Pre-Trip Inspection (Checklist Harian Kendaraan)
+### 5. Module Pre-Trip Inspection (Checklist Harian Kendaraan)
 1. **Tujuan Module**: Memastikan kelayakan fisik armada sebelum dioperasikan via pengecekan 4 parameter harian.
 2. **Alur Bisnis**: Driver/Teknisi Isi Form Checklist ➔ Pilih Status OK / Bermasalah ➔ Simpan Log ➔ Otomatis Picu Tiket Keluhan Jika Ada Masalah.
 ```mermaid
@@ -110,7 +132,7 @@ flowchart TD
 
 ---
 
-### 5. Module Status Armada (Monitoring Status Operasional)
+### 6. Module Status Armada (Monitoring Status Operasional)
 1. **Tujuan Module**: Menampilkan peta status kesiapan armada secara real-time (Ready, Servis, Rusak, Dipakai).
 2. **Alur Bisnis**: Rekap Data Checklist Harian + Tiket Keluhan Pending + Jadwal Servis Aktif ➔ Sajikan Ringkasan Visual Status.
 ```mermaid
@@ -128,7 +150,7 @@ flowchart TD
 
 ---
 
-### 6. Module Jadwal & Riwayat Perawatan (Maintenance Schedule & Log)
+### 7. Module Jadwal & Riwayat Perawatan (Maintenance Schedule & Log)
 1. **Tujuan Module**: Menentukan jadwal servis rutin komponen (Oli, Ban, Rem, Coolant) berdasarkan KM/Bulan dan mencatat riwayat perbaikan.
 2. **Alur Bisnis**: Atur Jadwal & Interval Komponen ➔ Kalender Memetakan Penggantian ➔ Teknisi Klik "Catat Ganti" ➔ Odometer & Log Servis Terupdate.
 ```mermaid
@@ -148,7 +170,7 @@ flowchart TD
 
 ---
 
-### 7. Module Laporan Keluhan Kendaraan (Issue Reporting)
+### 8. Module Laporan Keluhan Kendaraan (Issue Reporting)
 1. **Tujuan Module**: Pelaporan fisik kendala armada oleh Driver/User dan pemantauan status perbaikan oleh Teknisi/Admin.
 2. **Alur Bisnis**: Driver Buat Laporan & Upload Bukti ➔ Status `Baru` ➔ Teknisi Terima & Ubah ke `Diproses` ➔ Setelah Selesai Ubah ke `Selesai`.
 ```mermaid
@@ -167,7 +189,7 @@ flowchart TD
 
 ---
 
-### 8. Module Klaim Biaya Operasional (Expense Claim & Approval)
+### 9. Module Klaim Biaya Operasional (Expense Claim & Approval)
 1. **Tujuan Module**: Pencatatan transaksi pengeluaran (BBM, Tol, Parkir, Servis Bengkel) dan alur persetujuan (*approval*) anggaran oleh Admin.
 2. **Alur Bisnis**: User/Teknisi Input Klaim & Foto Struk ➔ Status `Pending` ➔ Admin Review ➔ Admin Klik `Approve` / `Reject` ➔ Terakumulasi ke Laporan.
 ```mermaid
@@ -190,7 +212,7 @@ flowchart TD
 
 ---
 
-### 9. Module Manajemen Aset & Inventory (Barang / Spare Parts)
+### 10. Module Manajemen Aset & Inventory (Barang / Spare Parts)
 1. **Tujuan Module**: Mengelola stok barang inventaris, peralatan bengkel, dan suku cadang armada beserta status kondisinya.
 2. **Alur Bisnis**: Catat Barang Baru ➔ Update Jumlah Stok & Status Kondisi (Baik / Perlu Diganti) ➔ Hapus/Arsipkan Barang.
 ```mermaid
@@ -207,7 +229,28 @@ flowchart TD
 
 ---
 
-### 10. Module Laporan & Analitik (Analytical Reports)
+### 11. Module Komunikasi Chat Driver - Manager (Direct Messaging)
+1. **Tujuan Module**: Fasilitas pesan instan langsung antara Driver dan Manager dengan polling otomatis dan penandaan status pesan dibaca.
+2. **Alur Bisnis**: Driver memilih Manager (atau Manager memilih Driver) ➔ Pengiriman Pesan ➔ Polling Periodik `poll` Memeriksa Pesan Baru ➔ Update Status Dibaca (`is_read`).
+```mermaid
+flowchart TD
+    A[Driver / Manager Buka Fitur Chat] --> B{Role User}
+    B -- Driver --> C[Otomatis Sambungkan ke Manager]
+    B -- Manager --> D[Pilih Driver dari Sidebar]
+    C --> E[Kirim Pesan Chat via POST /chat]
+    D --> E
+    E --> F[Polling Periodik GET /chat/poll Ambil Pesan Baru]
+    F --> G[Update Status is_read Menjadi True]
+```
+3. **Route yang Digunakan**: `GET /chat`, `POST /chat`, `GET /chat/poll`, `GET /chat/unread-count`
+4. **Controller yang Menangani**: `App\Http\Controllers\ChatController`
+5. **Model & Tabel Database**: `ChatMessage` (`chat_messages`), `User`.
+6. **Request Validation**: `receiver_id` (exists:users,id), `message` (required|string|max:2000).
+7. **Response**: `ViewResponse` (`chat.index`), `JsonResponse`.
+
+---
+
+### 12. Module Laporan & Analitik (Analytical Reports)
 1. **Tujuan Module**: Analisis akhir bulan total pengeluaran biaya per armada, efisiensi BBM, serta analisis perbaikan termahal & tersering ke bengkel.
 2. **Alur Bisnis**: Admin Pilih Periode Bulan/Tahun ➔ Controller Kalkulasi Agregasi Biaya ➔ Tampilkan Grafik Kendaraan Terboros BBM & Termahal Bengkel.
 ```mermaid
@@ -226,7 +269,7 @@ flowchart TD
 
 ---
 
-### 11. Module Notifikasi Peringatan System (Notification Center)
+### 13. Module Notifikasi Peringatan System (Notification Center)
 1. **Tujuan Module**: Peringatan (*alert*) otomatis mengenai dokumen armada yang mendekati tenggat (STNK/Pajak/KIR) atau jadwal pemeliharaan yang jatuh tempo.
 2. **Alur Bisnis**: System Engine Pindai Tanggal & KM ➔ Tampilkan Badge Jumlah Notifikasi di Navbar ➔ User Klik & Tandai Sudah Dibaca.
 ```mermaid
