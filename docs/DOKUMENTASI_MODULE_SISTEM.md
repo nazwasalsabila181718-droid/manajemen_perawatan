@@ -36,16 +36,18 @@ Dokumen ini berisi rincian teknis untuk **Module Utama** yang membangun **Sistem
 2. **Alur Bisnis**: Pengguna Login/Register ➔ Verifikasi Kredensial & Role ➔ Sesi Dibentuk ➔ Akses Fitur Sesuai Role.
 ```mermaid
 flowchart TD
-    classDef default fill:#FFF3CD,stroke:#8B5E34,stroke-width:2px,color:#5C3D1F;
-    classDef highlight fill:#D2A679,stroke:#5C3D1F,stroke-width:2px,color:#3E2A17;
+    A(Pengguna Input Form Login/Register) --> B{Verifikasi Kredensial & Role}
+    B -- Gagal --> C(Kembalikan Error Validation / Authentication)
+    B -- Berhasil --> D(Sesi Dibentuk & Token Diterbitkan)
+    D --> E(Akses Fitur Sesuai Role User)
 
-    A[Pengguna Input Form Login/Register] --> B{Verifikasi Kredensial & Role}
-    B -- Gagal --> C[Kembalikan Error Validation / Authentication]
-    B -- Berhasil --> D[Sesi Dibentuk & Token Diterbitkan]
-    D --> E[Akses Fitur Sesuai Role User]
+    classDef default fill:#FFD93D,stroke:#6B4226,stroke-width:2px,color:#3E2A17,rx:10,ry:10;
+    classDef highlight fill:#8B5E34,stroke:#3E2A17,stroke-width:2.5px,color:#FFF8E7,rx:10,ry:10;
+    classDef decision fill:#FFC107,stroke:#5C3D1F,stroke-width:2px,color:#3E2A17;
 
     class A,C,D default;
-    class B,E highlight;
+    class E highlight;
+    class B decision;
 ```
 3. **Route yang Digunakan**: `GET/POST /login`, `GET/POST /register`, `POST /logout`, `GET/POST /profile`
 4. **Controller yang Menangani**: `App\Http\Controllers\AuthController`, `App\Http\Controllers\ProfileController`
@@ -60,19 +62,21 @@ flowchart TD
 2. **Alur Bisnis**: User Akses `/` ➔ Cek `role` User ➔ Hitung KPI Aktif ➔ Tampilkan Dashboard Spesifik (Admin/Teknisi/Driver).
 ```mermaid
 flowchart TD
-    classDef default fill:#FFF3CD,stroke:#8B5E34,stroke-width:2px,color:#5C3D1F;
-    classDef highlight fill:#D2A679,stroke:#5C3D1F,stroke-width:2px,color:#3E2A17;
+    A(User Akses Route /) --> B{Cek Role User}
+    B -- Admin / Manager --> C(Kalkulasi KPI Total Armada, Biaya & Feed Aktivitas)
+    B -- Teknisi --> D(Kalkulasi Keluhan Baru/Diproses & Jadwal Servis)
+    B -- Driver --> E(Filter Kendaraan Siap Pakai & Perlu Perhatian)
+    C --> F(Render Dashboard Admin)
+    D --> G(Render Dashboard Teknisi)
+    E --> H(Render Dashboard Driver)
 
-    A[User Akses Route /] --> B{Cek Role User}
-    B -- Admin / Manager --> C[Kalkulasi KPI Total Armada, Biaya & Feed Aktivitas]
-    B -- Teknisi --> D[Kalkulasi Keluhan Baru/Diproses & Jadwal Servis]
-    B -- Driver --> E[Filter Kendaraan Siap Pakai & Perlu Perhatian]
-    C --> F[Render Dashboard Admin]
-    D --> G[Render Dashboard Teknisi]
-    E --> H[Render Dashboard Driver]
+    classDef default fill:#FFD93D,stroke:#6B4226,stroke-width:2px,color:#3E2A17,rx:10,ry:10;
+    classDef highlight fill:#8B5E34,stroke:#3E2A17,stroke-width:2.5px,color:#FFF8E7,rx:10,ry:10;
+    classDef decision fill:#FFC107,stroke:#5C3D1F,stroke-width:2px,color:#3E2A17;
 
     class A,C,D,E default;
-    class B,F,G,H highlight;
+    class F,G,H highlight;
+    class B decision;
 ```
 3. **Route yang Digunakan**: `GET /` (`dashboard`)
 4. **Controller yang Menangani**: `App\Http\Controllers\DashboardController`
@@ -87,18 +91,20 @@ flowchart TD
 2. **Alur Bisnis**: Request Masuk ➔ RoleMiddleware Memeriksa Role User Login ➔ Cocokkan dengan Parameter Middleware ➔ Izinkan Akses atau Tolak (403 Forbidden).
 ```mermaid
 flowchart TD
-    classDef default fill:#FFF3CD,stroke:#8B5E34,stroke-width:2px,color:#5C3D1F;
-    classDef highlight fill:#D2A679,stroke:#5C3D1F,stroke-width:2px,color:#3E2A17;
-
-    A[Request Pengguna ke Endpoint Terproteksi] --> B[Middleware Auth Memeriksa Status Sesi]
-    B -- Unauthenticated --> C[Redirect ke Halaman Login]
-    B -- Authenticated --> D[RoleMiddleware Memeriksa Parameter Role Route]
+    A(Request Pengguna ke Endpoint Terproteksi) --> B(Middleware Auth Memeriksa Status Sesi)
+    B -- Unauthenticated --> C(Redirect ke Halaman Login)
+    B -- Authenticated --> D(RoleMiddleware Memeriksa Parameter Role Route)
     D --> E{Apakah Role User Diizinkan?}
-    E -- Tidak --> F[Tampilkan Error 403 Forbidden]
-    E -- Ya --> G[Izinkan Request Masuk ke Controller]
+    E -- Tidak --> F(Tampilkan Error 403 Forbidden)
+    E -- Ya --> G(Izinkan Request Masuk ke Controller)
+
+    classDef default fill:#FFD93D,stroke:#6B4226,stroke-width:2px,color:#3E2A17,rx:10,ry:10;
+    classDef highlight fill:#8B5E34,stroke:#3E2A17,stroke-width:2.5px,color:#FFF8E7,rx:10,ry:10;
+    classDef decision fill:#FFC107,stroke:#5C3D1F,stroke-width:2px,color:#3E2A17;
 
     class A,B,C,D default;
-    class E,F,G highlight;
+    class F,G highlight;
+    class E decision;
 ```
 3. **Route yang Digunakan**: Seluruh Route yang dilindungi `middleware('role:...')`
 4. **Controller / Middleware yang Menangani**: `App\Http\Middleware\RoleMiddleware`, `App\Http\Controllers\AuthController`
@@ -113,20 +119,22 @@ flowchart TD
 2. **Alur Bisnis**: Admin Input Kendaraan ➔ Teknisi/Admin Update KM ➔ Sistem Evaluasi Indikator Warna (🟢 Safe, 🟡 Warning, 🔴 Overdue).
 ```mermaid
 flowchart TD
-    classDef default fill:#FFF3CD,stroke:#8B5E34,stroke-width:2px,color:#5C3D1F;
-    classDef highlight fill:#D2A679,stroke:#5C3D1F,stroke-width:2px,color:#3E2A17;
-
-    A[Admin Input Data / Foto Kendaraan Baru] --> B[Simpan ke Database]
-    C[Teknisi/Admin Update Odometer KM] --> D[Update Database]
-    B --> E[Sistem Evaluasi Tanggal Pajak, STNK, KIR & Odometer Servis]
+    A(Admin Input Data / Foto Kendaraan Baru) --> B(Simpan ke Database)
+    C(Teknisi/Admin Update Odometer KM) --> D(Update Database)
+    B --> E(Sistem Evaluasi Tanggal Pajak, STNK, KIR & Odometer Servis)
     D --> E
     E --> F{Hasil Evaluasi Status}
-    F -- Overdue / Expiry Past --> G[🔴 Merah: Jatuh Tempo / Perlu Rawat]
-    F -- Expiry <= 30 Hari / Sisa KM <= 500 --> H[🟡 Kuning: Mendekati Jatuh Tempo]
-    F -- Kondisi Masih Panjang --> I[🟢 Hijau: Kondisi Safe / Aman]
+    F -- Overdue / Expiry Past --> G(🔴 Merah: Jatuh Tempo / Perlu Rawat)
+    F -- Expiry <= 30 Hari / Sisa KM <= 500 --> H(🟡 Kuning: Mendekati Jatuh Tempo)
+    F -- Kondisi Masih Panjang --> I(🟢 Hijau: Kondisi Safe / Aman)
+
+    classDef default fill:#FFD93D,stroke:#6B4226,stroke-width:2px,color:#3E2A17,rx:10,ry:10;
+    classDef highlight fill:#8B5E34,stroke:#3E2A17,stroke-width:2.5px,color:#FFF8E7,rx:10,ry:10;
+    classDef decision fill:#FFC107,stroke:#5C3D1F,stroke-width:2px,color:#3E2A17;
 
     class A,B,C,D,E default;
-    class F,G,H,I highlight;
+    class G,H,I highlight;
+    class F decision;
 ```
 3. **Route yang Digunakan**: `GET/POST /kendaraan`, `PUT /kendaraan/{id}`, `PATCH /kendaraan/{id}/odometer`, `DELETE /kendaraan/{id}`
 4. **Controller yang Menangani**: `App\Http\Controllers\KendaraanController`
@@ -141,18 +149,20 @@ flowchart TD
 2. **Alur Bisnis**: Driver/Teknisi Isi Form Checklist ➔ Pilih Status OK / Bermasalah ➔ Simpan Log ➔ Otomatis Picu Tiket Keluhan Jika Ada Masalah.
 ```mermaid
 flowchart TD
-    classDef default fill:#FFF3CD,stroke:#8B5E34,stroke-width:2px,color:#5C3D1F;
-    classDef highlight fill:#D2A679,stroke:#5C3D1F,stroke-width:2px,color:#3E2A17;
-
-    A[Driver / Teknisi Buka Form Pre-Trip Inspection] --> B[Isi 13 Parameter: Cairan, Kaki-kaki, Kelistrikan, Kebersihan]
-    B --> C[Simpan Record Checklist Kendaraan]
+    A(Driver / Teknisi Buka Form Pre-Trip Inspection) --> B(Isi 13 Parameter: Cairan, Kaki-kaki, Kelistrikan, Kebersihan)
+    B --> C(Simpan Record Checklist Kendaraan)
     C --> D{Ada Parameter Bermasalah / Buruk?}
-    D -- Ya --> E[Kirim Notifikasi Otomatis ke Admin & Teknisi]
-    D -- Tidak --> F[Inspeksi Selesai - Armada Siap Operasional]
+    D -- Ya --> E(Kirim Notifikasi Otomatis ke Admin & Teknisi)
+    D -- Tidak --> F(Inspeksi Selesai - Armada Siap Operasional)
     E --> F
 
+    classDef default fill:#FFD93D,stroke:#6B4226,stroke-width:2px,color:#3E2A17,rx:10,ry:10;
+    classDef highlight fill:#8B5E34,stroke:#3E2A17,stroke-width:2.5px,color:#FFF8E7,rx:10,ry:10;
+    classDef decision fill:#FFC107,stroke:#5C3D1F,stroke-width:2px,color:#3E2A17;
+
     class A,B,C,E default;
-    class D,F highlight;
+    class F highlight;
+    class D decision;
 ```
 3. **Route yang Digunakan**: `GET /checklist/create`, `POST /checklist`
 4. **Controller yang Menangani**: `App\Http\Controllers\ChecklistKendaraanController`
@@ -167,13 +177,13 @@ flowchart TD
 2. **Alur Bisnis**: Rekap Data Checklist Harian + Tiket Keluhan Pending + Jadwal Servis Aktif ➔ Sajikan Ringkasan Visual Status.
 ```mermaid
 flowchart TD
-    classDef default fill:#FFF3CD,stroke:#8B5E34,stroke-width:2px,color:#5C3D1F;
-    classDef highlight fill:#D2A679,stroke:#5C3D1F,stroke-width:2px,color:#3E2A17;
+    A(Sistem Tarik Data Checklist Harian Terbaru) --> D(Koleksi & Agregasikan Status Seluruh Armada)
+    B(Sistem Tarik Data Keluhan Berstatus Baru / Diproses) --> D
+    C(Sistem Tarik Status Perawatan Servis Aktif) --> D
+    D --> E(Sajikan Dashboard Visual Ringkasan Status Armada Real-time)
 
-    A[Sistem Tarik Data Checklist Harian Terbaru] --> D[Koleksi & Agregasikan Status Seluruh Armada]
-    B[Sistem Tarik Data Keluhan Berstatus Baru / Diproses] --> D
-    C[Sistem Tarik Status Perawatan Servis Aktif] --> D
-    D --> E[Sajikan Dashboard Visual Ringkasan Status Armada Real-time]
+    classDef default fill:#FFD93D,stroke:#6B4226,stroke-width:2px,color:#3E2A17,rx:10,ry:10;
+    classDef highlight fill:#8B5E34,stroke:#3E2A17,stroke-width:2.5px,color:#FFF8E7,rx:10,ry:10;
 
     class A,B,C,D default;
     class E highlight;
@@ -191,18 +201,20 @@ flowchart TD
 2. **Alur Bisnis**: Atur Jadwal & Interval Komponen ➔ Kalender Memetakan Penggantian ➔ Teknisi Klik "Catat Ganti" ➔ Odometer & Log Servis Terupdate.
 ```mermaid
 flowchart TD
-    classDef default fill:#FFF3CD,stroke:#8B5E34,stroke-width:2px,color:#5C3D1F;
-    classDef highlight fill:#D2A679,stroke:#5C3D1F,stroke-width:2px,color:#3E2A17;
-
-    A[Admin/Teknisi Atur Interval KM / Bulan Per Komponen] --> B[Sistem Hitung Sisa KM & Sisa Hari]
+    A(Admin/Teknisi Atur Interval KM / Bulan Per Komponen) --> B(Sistem Hitung Sisa KM & Sisa Hari)
     B --> C{Status Perawatan}
-    C -- Terlambat / Segera --> D[Tampilkan Warning Peringatan Servis]
-    C -- Aman --> E[Status Kondisi Aman]
-    F[Teknisi Melakukan Servis & Klik Catat Ganti] --> G[Salin Record Lama ke Tabel Maintenance Log]
-    G --> H[Update Odometer Terakhir & Tanggal Terakhir di Schedule]
+    C -- Terlambat / Segera --> D(Tampilkan Warning Peringatan Servis)
+    C -- Aman --> E(Status Kondisi Aman)
+    F(Teknisi Melakukan Servis & Klik Catat Ganti) --> G(Salin Record Lama ke Tabel Maintenance Log)
+    G --> H(Update Odometer Terakhir & Tanggal Terakhir di Schedule)
 
-    class A,B,F,G default;
-    class C,D,E,H highlight;
+    classDef default fill:#FFD93D,stroke:#6B4226,stroke-width:2px,color:#3E2A17,rx:10,ry:10;
+    classDef highlight fill:#8B5E34,stroke:#3E2A17,stroke-width:2.5px,color:#FFF8E7,rx:10,ry:10;
+    classDef decision fill:#FFC107,stroke:#5C3D1F,stroke-width:2px,color:#3E2A17;
+
+    class A,B,D,F,G default;
+    class E,H highlight;
+    class C decision;
 ```
 3. **Route yang Digunakan**: `GET/POST /jadwal-perawatan`, `PATCH /jadwal-perawatan/{id}`, `GET /jadwal-perawatan/riwayat`
 4. **Controller yang Menangani**: `App\Http\Controllers\JadwalPerawatanController`
@@ -217,14 +229,14 @@ flowchart TD
 2. **Alur Bisnis**: Driver Buat Laporan & Upload Bukti ➔ Status `Baru` ➔ Teknisi Terima & Ubah ke `Diproses` ➔ Setelah Selesai Ubah ke `Selesai`.
 ```mermaid
 flowchart TD
-    classDef default fill:#FFF3CD,stroke:#8B5E34,stroke-width:2px,color:#5C3D1F;
-    classDef highlight fill:#D2A679,stroke:#5C3D1F,stroke-width:2px,color:#3E2A17;
+    A(Driver Melaporkan Keluhan Kendaraan) --> B(Record Disimpan dengan Status Baru)
+    B --> C(NotifHelper Kirim Notifikasi ke Admin & Manager)
+    D(Teknisi / Admin Buka Daftar Keluhan) --> E(Ubah Status Keluhan ke Diproses)
+    E --> F(Lakukan Perbaikan Fisik Armada)
+    F --> G(Input Catatan Penanganan & Ubah Status ke Selesai)
 
-    A[Driver Melaporkan Keluhan Kendaraan] --> B[Record Disimpan dengan Status Baru]
-    B --> C[NotifHelper Kirim Notifikasi ke Admin & Manager]
-    D[Teknisi / Admin Buka Daftar Keluhan] --> E[Ubah Status Keluhan ke Diproses]
-    E --> F[Lakukan Perbaikan Fisik Armada]
-    F --> G[Input Catatan Penanganan & Ubah Status ke Selesai]
+    classDef default fill:#FFD93D,stroke:#6B4226,stroke-width:2px,color:#3E2A17,rx:10,ry:10;
+    classDef highlight fill:#8B5E34,stroke:#3E2A17,stroke-width:2.5px,color:#FFF8E7,rx:10,ry:10;
 
     class A,B,C,D,E,F default;
     class G highlight;
@@ -242,21 +254,23 @@ flowchart TD
 2. **Alur Bisnis**: User/Teknisi Input Klaim & Foto Struk ➔ Status `Pending` ➔ Admin Review ➔ Admin Klik `Approve` / `Reject` ➔ Terakumulasi ke Laporan.
 ```mermaid
 flowchart TD
-    classDef default fill:#FFF3CD,stroke:#8B5E34,stroke-width:2px,color:#5C3D1F;
-    classDef highlight fill:#D2A679,stroke:#5C3D1F,stroke-width:2px,color:#3E2A17;
-
-    A[Driver / Teknisi Input Form Klaim Biaya] --> B[Simpan Pembayaran dengan Status Pending]
-    B --> C[Admin Review Daftar Klaim Biaya]
+    A(Driver / Teknisi Input Form Klaim Biaya) --> B(Simpan Pembayaran dengan Status Pending)
+    B --> C(Admin Review Daftar Klaim Biaya)
     C --> D{Keputusan Admin}
-    D -- Reject --> E[Ubah Status ke Ditolak]
-    D -- Approve --> F[Ubah Status ke Disetujui]
+    D -- Reject --> E(Ubah Status ke Ditolak)
+    D -- Approve --> F(Ubah Status ke Disetujui)
     F --> G{Metode Pembayaran?}
-    G -- QRIS --> H[Tampilkan Modal Transaksi QRIS]
-    G -- Transfer / Tunai --> I[Proses Pembayaran Selesai]
+    G -- QRIS --> H(Tampilkan Modal Transaksi QRIS)
+    G -- Transfer / Tunai --> I(Proses Pembayaran Selesai)
     H --> I
 
+    classDef default fill:#FFD93D,stroke:#6B4226,stroke-width:2px,color:#3E2A17,rx:10,ry:10;
+    classDef highlight fill:#8B5E34,stroke:#3E2A17,stroke-width:2.5px,color:#FFF8E7,rx:10,ry:10;
+    classDef decision fill:#FFC107,stroke:#5C3D1F,stroke-width:2px,color:#3E2A17;
+
     class A,B,C,F,H default;
-    class D,E,G,I highlight;
+    class E,I highlight;
+    class D,G decision;
 ```
 3. **Route yang Digunakan**: `GET/POST /pembayaran`, `POST /pembayaran/{id}/approve`, `POST /pembayaran/{id}/reject`
 4. **Controller yang Menangani**: `App\Http\Controllers\PembayaranController`
@@ -271,12 +285,12 @@ flowchart TD
 2. **Alur Bisnis**: Catat Barang Baru ➔ Update Jumlah Stok & Status Kondisi (Baik / Perlu Diganti) ➔ Hapus/Arsipkan Barang.
 ```mermaid
 flowchart TD
-    classDef default fill:#FFF3CD,stroke:#8B5E34,stroke-width:2px,color:#5C3D1F;
-    classDef highlight fill:#D2A679,stroke:#5C3D1F,stroke-width:2px,color:#3E2A17;
+    A(Admin / Teknisi Input Data Barang Inventaris Baru) --> B(Simpan Record Barang ke Database)
+    C(Update Jumlah Stok / Ubah Status Kondisi Barang) --> D(Perbarui Record Database)
+    E(Hapus Barang yang Tidak Digunakan / Rusak Total) --> F(Hapus Record dari Database)
 
-    A[Admin / Teknisi Input Data Barang Inventaris Baru] --> B[Simpan Record Barang ke Database]
-    C[Update Jumlah Stok / Ubah Status Kondisi Barang] --> D[Perbarui Record Database]
-    E[Hapus Barang yang Tidak Digunakan / Rusak Total] --> F[Hapus Record dari Database]
+    classDef default fill:#FFD93D,stroke:#6B4226,stroke-width:2px,color:#3E2A17,rx:10,ry:10;
+    classDef highlight fill:#8B5E34,stroke:#3E2A17,stroke-width:2.5px,color:#FFF8E7,rx:10,ry:10;
 
     class A,B,C,E default;
     class D,F highlight;
@@ -294,19 +308,21 @@ flowchart TD
 2. **Alur Bisnis**: Driver memilih Manager (atau Manager memilih Driver) ➔ Pengiriman Pesan ➔ Polling Periodik `poll` Memeriksa Pesan Baru ➔ Update Status Dibaca (`is_read`).
 ```mermaid
 flowchart TD
-    classDef default fill:#FFF3CD,stroke:#8B5E34,stroke-width:2px,color:#5C3D1F;
-    classDef highlight fill:#D2A679,stroke:#5C3D1F,stroke-width:2px,color:#3E2A17;
-
-    A[Driver / Manager Buka Fitur Chat] --> B{Role User}
-    B -- Driver --> C[Otomatis Sambungkan ke Manager]
-    B -- Manager --> D[Pilih Driver dari Sidebar]
-    C --> E[Kirim Pesan Chat via POST /chat]
+    A(Driver / Manager Buka Fitur Chat) --> B{Role User}
+    B -- Driver --> C(Otomatis Sambungkan ke Manager)
+    B -- Manager --> D(Pilih Driver dari Sidebar)
+    C --> E(Kirim Pesan Chat via POST /chat)
     D --> E
-    E --> F[Polling Periodik GET /chat/poll Ambil Pesan Baru]
-    F --> G[Update Status is_read Menjadi True]
+    E --> F(Polling Periodik GET /chat/poll Ambil Pesan Baru)
+    F --> G(Update Status is_read Menjadi True)
+
+    classDef default fill:#FFD93D,stroke:#6B4226,stroke-width:2px,color:#3E2A17,rx:10,ry:10;
+    classDef highlight fill:#8B5E34,stroke:#3E2A17,stroke-width:2.5px,color:#FFF8E7,rx:10,ry:10;
+    classDef decision fill:#FFC107,stroke:#5C3D1F,stroke-width:2px,color:#3E2A17;
 
     class A,C,D,E,F default;
-    class B,G highlight;
+    class G highlight;
+    class B decision;
 ```
 3. **Route yang Digunakan**: `GET /chat`, `POST /chat`, `GET /chat/poll`, `GET /chat/unread-count`
 4. **Controller yang Menangani**: `App\Http\Controllers\ChatController`
@@ -321,14 +337,14 @@ flowchart TD
 2. **Alur Bisnis**: Admin Pilih Periode Bulan/Tahun ➔ Controller Kalkulasi Agregasi Biaya ➔ Tampilkan Grafik Kendaraan Terboros BBM & Termahal Bengkel.
 ```mermaid
 flowchart TD
-    classDef default fill:#FFF3CD,stroke:#8B5E34,stroke-width:2px,color:#5C3D1F;
-    classDef highlight fill:#D2A679,stroke:#5C3D1F,stroke-width:2px,color:#3E2A17;
+    A(Admin Buka Halaman Laporan Analitik) --> B(Query Pembayaran Status Disetujui Bulan Ini)
+    B --> C(Pisahkan Agregasi Biaya BBM dan Biaya Bengkel/Servis)
+    C --> D(Hitung Total Pengeluaran & Frekuensi Masuk Bengkel per Armada)
+    D --> E(Identifikasi Kendaraan Terboros BBM & Termahal Bengkel)
+    E --> F(Render Visualisasi Chart.js & Tabel Summary Bulanan)
 
-    A[Admin Buka Halaman Laporan Analitik] --> B[Query Pembayaran Status Disetujui Bulan Ini]
-    B --> C[Pisahkan Agregasi Biaya BBM dan Biaya Bengkel/Servis]
-    C --> D[Hitung Total Pengeluaran & Frekuensi Masuk Bengkel per Armada]
-    D --> E[Identifikasi Kendaraan Terboros BBM & Termahal Bengkel]
-    E --> F[Render Visualisasi Chart.js & Tabel Summary Bulanan]
+    classDef default fill:#FFD93D,stroke:#6B4226,stroke-width:2px,color:#3E2A17,rx:10,ry:10;
+    classDef highlight fill:#8B5E34,stroke:#3E2A17,stroke-width:2.5px,color:#FFF8E7,rx:10,ry:10;
 
     class A,B,C,D,E default;
     class F highlight;
@@ -346,14 +362,14 @@ flowchart TD
 2. **Alur Bisnis**: System Engine Pindai Tanggal & KM ➔ Tampilkan Badge Jumlah Notifikasi di Navbar ➔ User Klik & Tandai Sudah Dibaca.
 ```mermaid
 flowchart TD
-    classDef default fill:#FFF3CD,stroke:#8B5E34,stroke-width:2px,color:#5C3D1F;
-    classDef highlight fill:#D2A679,stroke:#5C3D1F,stroke-width:2px,color:#3E2A17;
+    A(Notification Engine Pindai Dokumen STNK/Pajak/KIR & Jadwal Servis) --> B(Gabungkan Notifikasi Alert Dokumen & Record App Notifications)
+    B --> C(Hitung Total Unread Count untuk Badge Navbar)
+    D(User Buka Dropdown / Halaman Notifikasi) --> E(Sajikan Daftar Notifikasi Terpadu)
+    E --> F(User Klik Notifikasi / Klik Mark All as Read)
+    F --> G(Update Status is_read Menjadi True)
 
-    A[Notification Engine Pindai Dokumen STNK/Pajak/KIR & Jadwal Servis] --> B[Gabungkan Notifikasi Alert Dokumen & Record App Notifications]
-    B --> C[Hitung Total Unread Count untuk Badge Navbar]
-    D[User Buka Dropdown / Halaman Notifikasi] --> E[Sajikan Daftar Notifikasi Terpadu]
-    E --> F[User Klik Notifikasi / Klik Mark All as Read]
-    F --> G[Update Status is_read Menjadi True]
+    classDef default fill:#FFD93D,stroke:#6B4226,stroke-width:2px,color:#3E2A17,rx:10,ry:10;
+    classDef highlight fill:#8B5E34,stroke:#3E2A17,stroke-width:2.5px,color:#FFF8E7,rx:10,ry:10;
 
     class A,B,C,D,E,F default;
     class G highlight;
