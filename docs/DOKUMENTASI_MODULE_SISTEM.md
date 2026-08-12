@@ -159,7 +159,7 @@ flowchart TD
     B --> C{Status Perawatan}
     C -- Terlambat / Segera --> D[Tampilkan Warning Peringatan Servis]
     C -- Aman --> E[Status Kondisi Aman]
-    F[Teknisi Melakukan Servis & Klik 'Catat Ganti'] --> G[Salin Record Lama ke Tabel Maintenance Log]
+    F[Teknisi Melakukan Servis & Klik Catat Ganti] --> G[Salin Record Lama ke Tabel Maintenance Log]
     G --> H[Update Odometer Terakhir & Tanggal Terakhir di Schedule]
 ```
 3. **Route yang Digunakan**: `GET/POST /jadwal-perawatan`, `PATCH /jadwal-perawatan/{id}`, `GET /jadwal-perawatan/riwayat`
@@ -277,7 +277,7 @@ flowchart TD
     A[Notification Engine Pindai Dokumen STNK/Pajak/KIR & Jadwal Servis] --> B[Gabungkan Notifikasi Alert Dokumen & Record App Notifications]
     B --> C[Hitung Total Unread Count untuk Badge Navbar]
     D[User Buka Dropdown / Halaman Notifikasi] --> E[Sajikan Daftar Notifikasi Terpadu]
-    E --> F[User Klik Notifikasi / Klik 'Mark All as Read']
+    E --> F[User Klik Notifikasi / Klik Mark All as Read]
     F --> G[Update Status is_read Menjadi True]
 ```
 3. **Route yang Digunakan**: `GET /notifikasi`, `GET /notifikasi/count`, `POST /notifikasi/baca-semua`
