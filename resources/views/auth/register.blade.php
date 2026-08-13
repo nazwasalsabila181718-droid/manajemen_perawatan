@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registrasi Driver - MaintAsset</title>
+    <title>Registrasi Driver - Perawatan Armada</title>
     
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -81,7 +81,7 @@
                     <i class="bi bi-person-plus-fill"></i>
                 </div>
                 <h1 class="h3 fw-bold mb-1">Daftar Akun Driver</h1>
-                <p class="text-secondary small mb-4">Buat akun pengemudi baru untuk mengelola aset armada</p>
+                <p class="text-secondary small mb-4">Buat akun pengemudi baru untuk sistem perawatan armada</p>
             </div>
 
             <!-- Notifications / Errors -->

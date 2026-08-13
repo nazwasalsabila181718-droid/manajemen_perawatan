@@ -186,7 +186,8 @@
 
     <!-- Charts Row: Side-by-Side integration of Cost and Roadworthiness charts -->
     <div class="row g-4 mb-4">
-        <!-- Chart 1: Analisis Biaya -->
+        @if(auth()->user() && auth()->user()->role !== 'driver')
+        <!-- Chart 1: Analisis Biaya (Admin & Teknisi Only) -->
         <div class="col-lg-6">
             <div class="card-premium p-4 h-100">
                 <div class="d-flex justify-content-between align-items-start mb-3">
@@ -215,9 +216,10 @@
                 </div>
             </div>
         </div>
+        @endif
 
         <!-- Chart 2: Kelayakan Armada -->
-        <div class="col-lg-6">
+        <div class="{{ (auth()->user() && auth()->user()->role === 'driver') ? 'col-12' : 'col-lg-6' }}">
             <div class="card-premium p-4 h-100">
                 <div class="d-flex justify-content-between align-items-start mb-3">
                     <div>
@@ -395,7 +397,7 @@
                                             </form>
                                             {{-- Tombol Tolak --}}
                                             <form action="{{ route('pembayaran.reject', $pembayaran->id) }}" method="POST" class="d-inline"
-                                                  onsubmit="return confirm('Yakin ingin menolak klaim ini?')">
+                                                  data-confirm="Yakin ingin menolak klaim ini?">
                                                 @csrf
                                                 <button type="submit" class="btn-premium danger btn-sm px-2 py-1"
                                                     title="Tolak Klaim"
@@ -410,7 +412,7 @@
                                                 <i class="bi bi-pencil-square"></i>
                                             </a>
                                             <form action="{{ route('pembayaran.destroy', $pembayaran->id) }}" method="POST" class="d-inline"
-                                                  onsubmit="return confirm('Yakin ingin menghapus data ini?')">
+                                                  data-confirm="Yakin ingin menghapus data ini?">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn-premium danger btn-sm p-1" title="Hapus">
@@ -845,24 +847,26 @@
 
         // --- Chart 1: Biaya Chart (Smooth Wave Area Chart) ---
         @if(count($chartLabels) > 0)
-        const ctxBiaya = document.getElementById('biayaChart').getContext('2d');
-        const labels = {!! json_encode($chartLabels) !!};
-        const data = {!! json_encode($chartData) !!}.map(Number);
+        const canvasBiaya = document.getElementById('biayaChart');
+        if (canvasBiaya) {
+            const ctxBiaya = canvasBiaya.getContext('2d');
+            const labels = {!! json_encode($chartLabels) !!};
+            const data = {!! json_encode($chartData) !!}.map(Number);
 
-        const total = data.reduce((sum, v) => sum + v, 0);
-        const totalLabel = document.getElementById('totalBiayaLabel');
-        if (totalLabel) {
-            totalLabel.textContent = new Intl.NumberFormat('id-ID', {
-                style: 'currency', currency: 'IDR', maximumFractionDigits: 0
-            }).format(total);
-        }
+            const total = data.reduce((sum, v) => sum + v, 0);
+            const totalLabel = document.getElementById('totalBiayaLabel');
+            if (totalLabel) {
+                totalLabel.textContent = new Intl.NumberFormat('id-ID', {
+                    style: 'currency', currency: 'IDR', maximumFractionDigits: 0
+                }).format(total);
+            }
 
-        const fillGradient = ctxBiaya.createLinearGradient(0, 0, 0, 280);
-        fillGradient.addColorStop(0, 'rgba(37, 99, 235, 0.4)');
-        fillGradient.addColorStop(0.5, 'rgba(37, 99, 235, 0.12)');
-        fillGradient.addColorStop(1, 'rgba(37, 99, 235, 0.0)');
+            const fillGradient = ctxBiaya.createLinearGradient(0, 0, 0, 280);
+            fillGradient.addColorStop(0, 'rgba(37, 99, 235, 0.4)');
+            fillGradient.addColorStop(0.5, 'rgba(37, 99, 235, 0.12)');
+            fillGradient.addColorStop(1, 'rgba(37, 99, 235, 0.0)');
 
-        new Chart(ctxBiaya, {
+            new Chart(ctxBiaya, {
             type: 'line',
             data: {
                 labels: labels,
@@ -934,6 +938,7 @@
                 }
             }
         });
+        }
         @endif
 
         // --- Chart 2: Kelayakan Chart (Doughnut - Clickable Slices) ---

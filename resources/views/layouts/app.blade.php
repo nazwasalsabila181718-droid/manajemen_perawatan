@@ -4,13 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Manajemen Perawatan') - Sistem Perawatan Aset</title>
+    <title>@yield('title', 'Manajemen Perawatan') - Sistem Perawatan Armada</title>
 
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
     <!-- Custom Design CSS System -->
     <link href="{{ asset('css/style.css') }}" rel="stylesheet">
@@ -32,8 +35,8 @@
                 <div class="sidebar-logo-icon">
                     <i class="bi bi-wrench-adjustable-circle-fill"></i>
                 </div>
-                <div class="sidebar-logo-text">
-                    Maint<span>Asset</span>
+                <div class="sidebar-logo-text notranslate" translate="no">
+                    Perawatan<span>Armada</span>
                 </div>
             </div>
 
@@ -149,15 +152,7 @@
                         </a>
                     </li>
                     
-                    @if(auth()->user() && auth()->user()->role === 'administrator')
-                    <div class="sidebar-section-label">Sistem & Pengaturan</div>
-                    <li>
-                        <a href="{{ route('admin.users.index') }}" class="sidebar-link {{ Route::is('admin.users.*') ? 'active' : '' }}">
-                            <i class="bi bi-people"></i>
-                            <span>Kelola Pengguna</span>
-                        </a>
-                    </li>
-                    @endif
+
                 @endif
             </ul>
 
@@ -192,7 +187,7 @@
                         <!-- Logout Button -->
                         <form action="{{ route('logout') }}" method="POST" class="d-inline" id="logout-form">
                             @csrf
-                            <button type="submit" class="theme-toggle-btn text-danger border-0 bg-transparent" title="Keluar Sistem" onclick="return confirm('Apakah Anda yakin ingin keluar?')">
+                            <button type="button" class="theme-toggle-btn text-danger border-0 bg-transparent" title="Keluar Sistem" onclick="confirmLogout(event)">
                                 <i class="bi bi-box-arrow-right fs-5"></i>
                             </button>
                         </form>
@@ -216,6 +211,140 @@
                 </div>
 
                 <div class="header-actions d-flex align-items-center gap-3">
+                    <!-- Language Selector Dropdown -->
+                    <div class="dropdown me-1">
+                        <button class="btn btn-premium secondary rounded-pill px-2.5 py-1 d-flex align-items-center gap-1.5 shadow-sm" type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 11px; height: 36px; border: 1px solid var(--border-color); background: var(--bg-secondary); transition: var(--transition-fast);">
+                            <div class="d-flex align-items-center justify-content-center rounded-circle bg-primary-subtle" style="width: 22px; height: 22px;">
+                                <i class="bi bi-translate text-primary" style="font-size: 11px;"></i>
+                            </div>
+                            <span id="current-lang-text" class="fw-semibold text-primary-emphasis" style="font-size: 11px;">Bahasa Indonesia</span>
+                            <i class="bi bi-chevron-down text-muted ms-0.5" style="font-size: 8px;"></i>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-1.5" aria-labelledby="languageDropdown" style="border-radius: 14px; width: 210px; background: var(--bg-secondary); backdrop-filter: var(--backdrop-blur);">
+                            <div class="px-2 py-1 mb-1 border-bottom d-flex align-items-center justify-content-between">
+                                <span class="text-uppercase fw-bold text-secondary" style="font-size: 9px; letter-spacing: 0.06em;"><i class="bi bi-globe2 me-1 text-primary"></i> Pilih Bahasa</span>
+                                <span class="badge bg-primary-subtle text-primary rounded-pill px-1.5 py-0.5" style="font-size: 8px;">Global</span>
+                            </div>
+                            <div style="max-height: 260px; overflow-y: auto;" class="custom-scroll">
+                                <a class="dropdown-item d-flex align-items-center justify-content-between py-1.5 px-2 rounded-2 mb-0.5 nav-lang-item" href="#" onclick="changeLanguage('id', 'Bahasa Indonesia', event)" data-lang="id" style="font-size: 11px;">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="https://flagcdn.com/w40/id.png" alt="ID" style="width: 16px; height: 11px; object-fit: cover; border-radius: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.15);">
+                                        <span class="fw-medium">Bahasa Indonesia</span>
+                                    </div>
+                                    <i class="bi bi-check2 text-primary d-none active-check" style="font-size: 12px;"></i>
+                                </a>
+                                <a class="dropdown-item d-flex align-items-center justify-content-between py-1.5 px-2 rounded-2 mb-0.5 nav-lang-item" href="#" onclick="changeLanguage('en', 'English', event)" data-lang="en" style="font-size: 11px;">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="https://flagcdn.com/w40/us.png" alt="US" style="width: 16px; height: 11px; object-fit: cover; border-radius: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.15);">
+                                        <span class="fw-medium">English (US)</span>
+                                    </div>
+                                    <i class="bi bi-check2 text-primary d-none active-check" style="font-size: 12px;"></i>
+                                </a>
+                                <a class="dropdown-item d-flex align-items-center justify-content-between py-1.5 px-2 rounded-2 mb-0.5 nav-lang-item" href="#" onclick="changeLanguage('ar', 'العربية', event)" data-lang="ar" style="font-size: 11px;">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="https://flagcdn.com/w40/sa.png" alt="SA" style="width: 16px; height: 11px; object-fit: cover; border-radius: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.15);">
+                                        <span class="fw-medium">العربية (Arabic)</span>
+                                    </div>
+                                    <i class="bi bi-check2 text-primary d-none active-check" style="font-size: 12px;"></i>
+                                </a>
+                                <a class="dropdown-item d-flex align-items-center justify-content-between py-1.5 px-2 rounded-2 mb-0.5 nav-lang-item" href="#" onclick="changeLanguage('zh-CN', '中文 (简体)', event)" data-lang="zh-CN" style="font-size: 11px;">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="https://flagcdn.com/w40/cn.png" alt="CN" style="width: 16px; height: 11px; object-fit: cover; border-radius: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.15);">
+                                        <span class="fw-medium">中文 (Chinese)</span>
+                                    </div>
+                                    <i class="bi bi-check2 text-primary d-none active-check" style="font-size: 12px;"></i>
+                                </a>
+                                <a class="dropdown-item d-flex align-items-center justify-content-between py-1.5 px-2 rounded-2 mb-0.5 nav-lang-item" href="#" onclick="changeLanguage('ja', '日本語', event)" data-lang="ja" style="font-size: 11px;">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="https://flagcdn.com/w40/jp.png" alt="JP" style="width: 16px; height: 11px; object-fit: cover; border-radius: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.15);">
+                                        <span class="fw-medium">日本語 (Japanese)</span>
+                                    </div>
+                                    <i class="bi bi-check2 text-primary d-none active-check" style="font-size: 12px;"></i>
+                                </a>
+                                <a class="dropdown-item d-flex align-items-center justify-content-between py-1.5 px-2 rounded-2 mb-0.5 nav-lang-item" href="#" onclick="changeLanguage('ko', '한국어', event)" data-lang="ko" style="font-size: 11px;">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="https://flagcdn.com/w40/kr.png" alt="KR" style="width: 16px; height: 11px; object-fit: cover; border-radius: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.15);">
+                                        <span class="fw-medium">한국어 (Korean)</span>
+                                    </div>
+                                    <i class="bi bi-check2 text-primary d-none active-check" style="font-size: 12px;"></i>
+                                </a>
+                                <a class="dropdown-item d-flex align-items-center justify-content-between py-1.5 px-2 rounded-2 mb-0.5 nav-lang-item" href="#" onclick="changeLanguage('es', 'Español', event)" data-lang="es" style="font-size: 11px;">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="https://flagcdn.com/w40/es.png" alt="ES" style="width: 16px; height: 11px; object-fit: cover; border-radius: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.15);">
+                                        <span class="fw-medium">Español</span>
+                                    </div>
+                                    <i class="bi bi-check2 text-primary d-none active-check" style="font-size: 12px;"></i>
+                                </a>
+                                <a class="dropdown-item d-flex align-items-center justify-content-between py-1.5 px-2 rounded-2 mb-0.5 nav-lang-item" href="#" onclick="changeLanguage('fr', 'Français', event)" data-lang="fr" style="font-size: 11px;">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="https://flagcdn.com/w40/fr.png" alt="FR" style="width: 16px; height: 11px; object-fit: cover; border-radius: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.15);">
+                                        <span class="fw-medium">Français</span>
+                                    </div>
+                                    <i class="bi bi-check2 text-primary d-none active-check" style="font-size: 12px;"></i>
+                                </a>
+                                <a class="dropdown-item d-flex align-items-center justify-content-between py-1.5 px-2 rounded-2 mb-0.5 nav-lang-item" href="#" onclick="changeLanguage('de', 'Deutsch', event)" data-lang="de" style="font-size: 11px;">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="https://flagcdn.com/w40/de.png" alt="DE" style="width: 16px; height: 11px; object-fit: cover; border-radius: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.15);">
+                                        <span class="fw-medium">Deutsch</span>
+                                    </div>
+                                    <i class="bi bi-check2 text-primary d-none active-check" style="font-size: 12px;"></i>
+                                </a>
+                                <a class="dropdown-item d-flex align-items-center justify-content-between py-1.5 px-2 rounded-2 mb-0.5 nav-lang-item" href="#" onclick="changeLanguage('ru', 'Русский', event)" data-lang="ru" style="font-size: 11px;">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="https://flagcdn.com/w40/ru.png" alt="RU" style="width: 16px; height: 11px; object-fit: cover; border-radius: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.15);">
+                                        <span class="fw-medium">Русский</span>
+                                    </div>
+                                    <i class="bi bi-check2 text-primary d-none active-check" style="font-size: 12px;"></i>
+                                </a>
+                                <a class="dropdown-item d-flex align-items-center justify-content-between py-1.5 px-2 rounded-2 mb-0.5 nav-lang-item" href="#" onclick="changeLanguage('pt', 'Português', event)" data-lang="pt" style="font-size: 11px;">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="https://flagcdn.com/w40/pt.png" alt="PT" style="width: 16px; height: 11px; object-fit: cover; border-radius: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.15);">
+                                        <span class="fw-medium">Português</span>
+                                    </div>
+                                    <i class="bi bi-check2 text-primary d-none active-check" style="font-size: 12px;"></i>
+                                </a>
+                                <a class="dropdown-item d-flex align-items-center justify-content-between py-1.5 px-2 rounded-2 mb-0.5 nav-lang-item" href="#" onclick="changeLanguage('hi', 'हिन्दी', event)" data-lang="hi" style="font-size: 11px;">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="https://flagcdn.com/w40/in.png" alt="IN" style="width: 16px; height: 11px; object-fit: cover; border-radius: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.15);">
+                                        <span class="fw-medium">हिन्दी (Hindi)</span>
+                                    </div>
+                                    <i class="bi bi-check2 text-primary d-none active-check" style="font-size: 12px;"></i>
+                                </a>
+                                <a class="dropdown-item d-flex align-items-center justify-content-between py-1.5 px-2 rounded-2 mb-0.5 nav-lang-item" href="#" onclick="changeLanguage('nl', 'Nederlands', event)" data-lang="nl" style="font-size: 11px;">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="https://flagcdn.com/w40/nl.png" alt="NL" style="width: 16px; height: 11px; object-fit: cover; border-radius: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.15);">
+                                        <span class="fw-medium">Nederlands</span>
+                                    </div>
+                                    <i class="bi bi-check2 text-primary d-none active-check" style="font-size: 12px;"></i>
+                                </a>
+                                <a class="dropdown-item d-flex align-items-center justify-content-between py-1.5 px-2 rounded-2 mb-0.5 nav-lang-item" href="#" onclick="changeLanguage('tr', 'Türkçe', event)" data-lang="tr" style="font-size: 11px;">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="https://flagcdn.com/w40/tr.png" alt="TR" style="width: 16px; height: 11px; object-fit: cover; border-radius: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.15);">
+                                        <span class="fw-medium">Türkçe</span>
+                                    </div>
+                                    <i class="bi bi-check2 text-primary d-none active-check" style="font-size: 12px;"></i>
+                                </a>
+                                <a class="dropdown-item d-flex align-items-center justify-content-between py-1.5 px-2 rounded-2 mb-0.5 nav-lang-item" href="#" onclick="changeLanguage('vi', 'Tiếng Việt', event)" data-lang="vi" style="font-size: 11px;">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="https://flagcdn.com/w40/vn.png" alt="VN" style="width: 16px; height: 11px; object-fit: cover; border-radius: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.15);">
+                                        <span class="fw-medium">Tiếng Việt</span>
+                                    </div>
+                                    <i class="bi bi-check2 text-primary d-none active-check" style="font-size: 12px;"></i>
+                                </a>
+                                <a class="dropdown-item d-flex align-items-center justify-content-between py-1.5 px-2 rounded-2 mb-0.5 nav-lang-item" href="#" onclick="changeLanguage('th', 'ไทย', event)" data-lang="th" style="font-size: 11px;">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="https://flagcdn.com/w40/th.png" alt="TH" style="width: 16px; height: 11px; object-fit: cover; border-radius: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.15);">
+                                        <span class="fw-medium">ไทย (Thai)</span>
+                                    </div>
+                                    <i class="bi bi-check2 text-primary d-none active-check" style="font-size: 12px;"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hidden Google Translate Element -->
+                    <div id="google_translate_element" style="display: none;"></div>
+
                     <!-- Notifications Center -->
                     <div class="dropdown">
                         <button class="btn btn-premium secondary rounded-circle p-0 d-flex align-items-center justify-content-center position-relative" type="button" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="width: 42px; height: 42px;" onclick="loadNotifications()">
@@ -240,7 +369,7 @@
                     </div>
 
                     <!-- System Live Time -->
-                    <div class="text-end d-none d-sm-block bg-secondary px-3 py-2 rounded-3 border" style="background-color: var(--bg-secondary);">
+                    <div class="text-end d-none d-sm-block bg-secondary px-3 py-2 rounded-3 border notranslate" translate="no" style="background-color: var(--bg-secondary);">
                         <div class="text-muted fw-bold" style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em;">Waktu Sistem</div>
                         <div class="text-primary fw-bold" style="font-size: 13px;" id="system-time"></div>
                     </div>
@@ -465,6 +594,189 @@
                 badge.style.display = 'none';
             }
         }
+    </script>
+
+    <!-- Google Translate Script & Handler -->
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'id',
+                includedLanguages: 'id,en,ar,zh-CN,ja,ko,es,fr,de,ru,pt,hi,nl,tr,vi,th',
+                autoDisplay: false
+            }, 'google_translate_element');
+        }
+
+        function changeLanguage(langCode, langName, event) {
+            if (event) event.preventDefault();
+            
+            // Update UI dropdown text
+            const currentLangEl = document.getElementById('current-lang-text');
+            if (currentLangEl) currentLangEl.innerText = langName;
+
+            updateActiveCheckmark(langCode);
+            
+            const domain = window.location.hostname;
+
+            if (langCode === 'id') {
+                // Clear translate cookie to restore original Bahasa Indonesia
+                document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=" + domain;
+                document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
+                document.cookie = "googtrans=/id/id; path=/; domain=" + domain;
+                document.cookie = "googtrans=/id/id; path=/";
+                window.location.reload();
+                return;
+            }
+
+            // Set googtrans cookie for persistent translation across pages
+            document.cookie = "googtrans=/id/" + langCode + "; path=/; domain=" + domain;
+            document.cookie = "googtrans=/id/" + langCode + "; path=/";
+            
+            // Trigger Google Translate iframe element change if loaded
+            const selectEl = document.querySelector('.goog-te-combo');
+            if (selectEl) {
+                selectEl.value = langCode;
+                selectEl.dispatchEvent(new Event('change'));
+            } else {
+                window.location.reload();
+            }
+        }
+
+        function updateActiveCheckmark(activeLang) {
+            document.querySelectorAll('.nav-lang-item').forEach(item => {
+                const check = item.querySelector('.active-check');
+                if (item.getAttribute('data-lang') === activeLang) {
+                    item.classList.add('bg-primary-subtle', 'fw-bold');
+                    if (check) check.classList.remove('d-none');
+                } else {
+                    item.classList.remove('bg-primary-subtle', 'fw-bold');
+                    if (check) check.classList.add('d-none');
+                }
+            });
+        }
+
+        // Maintain active language text on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            let currentLang = 'id';
+            const match = document.cookie.match(/(?:^|; )googtrans=([^;]*)/);
+            if (match) {
+                const langPair = decodeURIComponent(match[1]);
+                currentLang = langPair.split('/')[2] || 'id';
+            }
+
+            const langMap = {
+                'id': 'Bahasa Indonesia',
+                'en': 'English',
+                'ar': 'العربية',
+                'zh-CN': '中文 (简体)',
+                'ja': '日本語',
+                'ko': '한국어',
+                'es': 'Español',
+                'fr': 'Français',
+                'de': 'Deutsch',
+                'ru': 'Русский',
+                'pt': 'Português',
+                'hi': 'हिन्दी',
+                'nl': 'Nederlands',
+                'tr': 'Türkçe',
+                'vi': 'Tiếng Việt',
+                'th': 'ไทย'
+            };
+
+            if (langMap[currentLang]) {
+                const currentLangEl = document.getElementById('current-lang-text');
+                if (currentLangEl) currentLangEl.innerText = langMap[currentLang];
+            }
+            updateActiveCheckmark(currentLang);
+        });
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function confirmLogout(event) {
+            if (event) event.preventDefault();
+            Swal.fire({
+                html: `
+                    <div class="logout-card-body text-center">
+                        <div class="mb-2">
+                            <span class="logout-badge-tag">
+                                <span class="pulse-dot"></span> NOTIFIKASI KELUAR
+                            </span>
+                        </div>
+                        
+                        <div class="logout-icon-wrapper mx-auto mb-2">
+                            <div class="logout-icon-ring"></div>
+                            <div class="logout-icon-inner">
+                                <i class="bi bi-box-arrow-right"></i>
+                            </div>
+                        </div>
+
+                        <h6 class="logout-card-title fw-bold mb-1">Konfirmasi Sesi Keluar</h6>
+                        
+                        @if(auth()->user())
+                        <div class="logout-user-badge d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-2">
+                            <i class="bi bi-person-circle text-danger" style="font-size: 13px;"></i>
+                            <span class="fw-semibold text-dark" style="font-size: 11.5px;">{{ auth()->user()->name }}</span>
+                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle text-capitalize font-monospace" style="font-size: 9.5px; padding: 2px 6px;">{{ auth()->user()->role ?? 'User' }}</span>
+                        </div>
+                        @endif
+
+                        <p class="logout-card-desc mb-0">
+                            Apakah Anda yakin ingin keluar dari sistem <strong>Perawatan Armada</strong>?
+                        </p>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: '<i class="bi bi-box-arrow-right me-1"></i> Ya, Keluar',
+                cancelButtonText: 'Batal',
+                buttonsStyling: false,
+                customClass: {
+                    container: 'swal-backdrop-blur',
+                    popup: 'swal-modal-compact logout-modal-card',
+                    confirmButton: 'btn-swal-danger logout-confirm-btn',
+                    cancelButton: 'btn-swal-cancel logout-cancel-btn'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('logout-form').submit();
+                }
+            });
+        }
+
+        // Global confirmation handler for forms with data-confirm or onsubmit confirm
+        document.addEventListener('submit', function(e) {
+            const form = e.target;
+            const confirmMsg = form.getAttribute('data-confirm');
+            if (confirmMsg && !form.dataset.confirmed) {
+                e.preventDefault();
+                Swal.fire({
+                    html: `
+                        <div class="text-center pt-1">
+                            <div class="swal-icon-badge warning mx-auto">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                            </div>
+                            <h6 class="fw-bold mb-1" style="font-size: 1.1rem; color: var(--text-primary);">Konfirmasi Tindakan</h6>
+                            <p class="text-secondary mb-0" style="font-size: 12.5px; line-height: 1.45;">${confirmMsg}</p>
+                        </div>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Lanjutkan',
+                    cancelButtonText: 'Batal',
+                    buttonsStyling: false,
+                    customClass: {
+                        popup: 'swal-modal-compact',
+                        confirmButton: 'btn-swal-primary',
+                        cancelButton: 'btn-swal-cancel'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.dataset.confirmed = "true";
+                        form.submit();
+                    }
+                });
+            }
+        });
     </script>
 
     @yield('scripts')

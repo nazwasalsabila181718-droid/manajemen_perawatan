@@ -14,8 +14,8 @@
             <div class="card-premium h-100 d-flex flex-column justify-content-between p-4" style="background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--accent-subtle) 100%); border-left: 4px solid var(--accent);">
                 <div>
                     <div class="d-flex align-items-center gap-2 mb-2">
-                        <span class="badge-premium indigo"><i class="bi bi-shield-check"></i> Executive Control Panel</span>
-                        <span class="badge-premium info">Real-time Sync</span>
+                        <span class="badge-premium indigo"><i class="bi bi-shield-check"></i> Panel Kontrol Eksekutif</span>
+                        <span class="badge-premium info">Sinkronisasi Real-Time</span>
                     </div>
                     <h2 class="fw-bold mb-2" style="font-size: 1.45rem;">Manajemen Perawatan Armada Terintegrasi</h2>
                     <p class="text-secondary mb-3" style="max-width: 640px; font-size: 13px; line-height: 1.6;">
@@ -155,7 +155,8 @@
 
     <!-- Charts Row: Bar Chart & Doughnut Chart (Side by Side) -->
     <div class="row g-4 mb-4">
-        <!-- Chart 1: Analisis Biaya -->
+        @if(auth()->user() && auth()->user()->role !== 'driver')
+        <!-- Chart 1: Analisis Biaya (Admin & Teknisi Only) -->
         <div class="col-lg-6">
             <div class="card-premium p-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -182,9 +183,10 @@
                 </div>
             </div>
         </div>
+        @endif
 
         <!-- Chart 2: Kelayakan Armada -->
-        <div class="col-lg-6">
+        <div class="{{ (auth()->user() && auth()->user()->role === 'driver') ? 'col-12' : 'col-lg-6' }}">
             <div class="card-premium p-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <div>
@@ -513,12 +515,13 @@
     background: #FAF7F2;
     border: 1px solid #EAE3D2;
     border-radius: 16px;
-    padding: 12px 14px;
+    padding: 10px 10px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 2px 8px rgba(15, 23, 42, 0.02);
+    min-width: 0;
 }
 .stat-card-cream:hover {
     transform: translateY(-3px);
@@ -526,13 +529,13 @@
     border-color: #10B981;
 }
 .stat-icon-cream {
-    width: 38px;
-    height: 38px;
-    border-radius: 12px;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 17px;
+    font-size: 15px;
     flex-shrink: 0;
 }
 .stat-icon-cream.green {
@@ -556,20 +559,25 @@
     color: #0EA5E9;
 }
 .stat-label-cream {
-    font-size: 10.5px;
+    font-size: 9.5px;
     font-weight: 700;
     color: #78716C;
     line-height: 1.2;
     margin-bottom: 2px;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     text-transform: uppercase;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.02em;
 }
 .stat-val-cream {
-    font-size: 1.2rem;
+    font-size: 1.05rem;
     font-weight: 800;
     line-height: 1.1;
     font-family: 'Outfit', sans-serif;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .stat-val-cream.green { color: #047857; }
 .stat-val-cream.emerald { color: #10B981; }
@@ -577,7 +585,7 @@
 .stat-val-cream.amber { color: #D97706; }
 .stat-val-cream.teal { color: #0EA5E9; }
 .stat-val-cream .unit {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 600;
     color: #A8A29E;
     margin-left: 2px;

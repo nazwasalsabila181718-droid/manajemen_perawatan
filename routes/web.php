@@ -65,13 +65,7 @@ Route::middleware(['auth'])->group(function () {
     // Laporan Analitik Akhir Bulan
     Route::get('/laporan-analitik', [\App\Http\Controllers\LaporanController::class, 'index'])->name('laporan.index')->middleware('role:administrator');
 
-    // Manajemen Pengguna (khusus administrator)
-    Route::middleware(['role:administrator'])->group(function () {
-        Route::get('/admin/users', [\App\Http\Controllers\Admin\UserController::class, 'index'])->name('admin.users.index');
-        Route::post('/admin/users', [\App\Http\Controllers\Admin\UserController::class, 'store'])->name('admin.users.store');
-        Route::patch('/admin/users/{id}', [\App\Http\Controllers\Admin\UserController::class, 'update'])->name('admin.users.update');
-        Route::delete('/admin/users/{id}', [\App\Http\Controllers\Admin\UserController::class, 'destroy'])->name('admin.users.destroy');
-    });
+
 
     // Jadwal Perawatan (Oli, Aki, Ban, dll)
     Route::get('/jadwal-perawatan', [JadwalPerawatanController::class, 'index'])->name('jadwal-perawatan.index');

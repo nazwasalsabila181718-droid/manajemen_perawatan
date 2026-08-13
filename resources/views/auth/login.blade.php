@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - MaintAsset Sistem Perawatan Aset</title>
+    <title>Login - Sistem Perawatan Armada</title>
     
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -138,8 +138,8 @@
                 <div class="auth-logo-badge">
                     <i class="bi bi-wrench-adjustable-circle-fill"></i>
                 </div>
-                <h1 class="auth-title">Maint<span class="text-primary">Asset</span></h1>
-                <p class="auth-subtitle">Sistem Perawatan Aset & Manajemen Armada</p>
+                <h1 class="auth-title notranslate" translate="no">Perawatan<span class="text-primary">Armada</span></h1>
+                <p class="auth-subtitle">Sistem Manajemen Perawatan Armada</p>
             </div>
 
             <!-- Notifications / Alerts -->

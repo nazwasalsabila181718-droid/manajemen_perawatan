@@ -1,8 +1,8 @@
 @extends('layouts.app')
 
-@section('title', 'Perawatan Aset')
-@section('page_title', 'Manajemen Perawatan Aset')
-@section('page_subtitle', 'Pantau kondisi kelayakan inventaris kantor dan laporkan perbaikan.')
+@section('title', 'Inventaris & Spare Part Armada')
+@section('page_title', 'Manajemen Spare Part & Inventaris')
+@section('page_subtitle', 'Pantau kondisi kelayakan inventaris bengkel dan spare part armada.')
 
 @section('content')
 <div class="container-fluid p-0">
